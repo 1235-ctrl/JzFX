@@ -1,0 +1,14 @@
+{
+    "name": "句子复习管理器",
+    "short_name": "句子复习",
+    "description": "基于间隔重复的句子复习工具，支持离线使用",
+    "start_url": "./INDEX.HTML",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#667eea",
+    "theme_color": "#667eea",
+    "icons": [
+        { "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23667eea'/><text x='50' y='68' font-size='55' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>JZ</text></svg>", "sizes": "any", "type": "image/svg+xml" }
+    ]
+}
