@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>句子复习管理器</title>
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="句子复习">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23667eea'/><text x='50' y='68' font-size='55' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>JZ</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23667eea'/><text x='50' y='68' font-size='55' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'>JZ</text></svg>">
+    <link rel="manifest" href="./manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            font-size: 28px;
+            margin-bottom: 24px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 14px;
+            color: #4a5568;
+            border-left: 4px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        #sentenceInput {
+            flex: 1;
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+            resize: vertical;
+            min-height: 44px;
+            font-family: inherit;
+        }
+
+        #sentenceInput:focus {
+            border-color: #667eea;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        .btn-add {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+
+        .btn-add:hover {
+            box-shadow: 0 6px 16px rgba(102,126,234,0.55);
+        }
+
+        .progress-wrap {
+            margin: 10px 0 16px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 14px;
+            background: #edf2f7;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .sentence-list {
+            list-style: none;
+        }
+
+        .sentence-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: #f7fafc;
+            transition: background 0.2s;
+            flex-wrap: wrap;
+        }
+
+        .sentence-item:hover {
+            background: #edf2f7;
+        }
+
+        .sentence-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #667eea;
+            flex-shrink: 0;
+        }
+
+        .sentence-main {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .sentence-text {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #2d3748;
+            word-break: break-word;
+        }
+
+        .sentence-item.checked .sentence-text {
+            text-decoration: line-through;
+            color: #a0aec0;
+        }
+
+        .sentence-meta {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .badge-due {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .badge-due-today {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .badge-mastered {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-interval {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .badge-reps {
+            background: #e9d8fd;
+            color: #553c9a;
+        }
+
+        .btn-del {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-del:hover {
+            background: #feb2b2;
+        }
+
+        .btn-review {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-review:hover {
+            background: #9ae6b4;
+        }
+
+        .empty {
+            text-align: center;
+            color: #a0aec0;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        .week-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 8px;
+        }
+
+        .week-nav button {
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .week-nav button:hover {
+            background: #e2e8f0;
+        }
+
+        .week-label {
+            font-weight: 600;
+            font-size: 15px;
+            color: #2d3748;
+        }
+
+        .btn-clear-week {
+            width: 100%;
+            padding: 10px;
+            background: #edf2f7;
+            color: #4a5568;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .btn-clear-week:hover {
+            background: #e2e8f0;
+        }
+
+        .due-section {
+            margin-bottom: 20px;
+        }
+
+        .due-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .due-count {
+            font-size: 13px;
+            color: #e53e3e;
+            font-weight: 600;
+            background: #fff5f5;
+            padding: 4px 12px;
+            border-radius: 10px;
+        }
+
+        .review-panel {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .review-panel .rp-text {
+            font-size: 15px;
+            color: #2d3748;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .grade-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .grade-btn {
+            flex: 1;
+            min-width: 50px;
+            padding: 8px 6px;
+            font-size: 12px;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .grade-btn:active {
+            transform: scale(0.94);
+        }
+
+        .grade-0 { background: #e53e3e; }
+        .grade-1 { background: #dd6b20; }
+        .grade-2 { background: #d69e2e; }
+        .grade-3 { background: #48bb78; }
+        .grade-4 { background: #4299e1; }
+        .grade-5 { background: #805ad5; }
+
+        .grade-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .data-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .data-row button {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        .btn-export {
+            background: #4299e1;
+            color: #fff;
+        }
+
+        .btn-export:hover {
+            background: #3182ce;
+        }
+
+        .btn-import {
+            background: #9f7aea;
+            color: #fff;
+        }
+
+        .btn-import:hover {
+            background: #805ad5;
+        }
+
+        .btn-install {
+            display: none;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: #fff;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .btn-install.visible {
+            display: block;
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3748;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .card {
+                padding: 16px;
+                border-radius: 12px;
+            }
+
+            .sentence-item {
+                padding: 10px;
+            }
+
+            .btn-del,
+            .btn-review {
+                padding: 5px 8px;
+                font-size: 11px;
+            }
+
+            .grade-btn {
+                min-width: 44px;
+                padding: 6px 4px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 句子复习管理器</h1>
+
+        <div class="card">
+            <h2>✏️ 添加句子</h2>
+            <div class="input-row">
+                <textarea id="sentenceInput" placeholder="输入一个要复习的句子..."></textarea>
+            </div>
+            <button class="btn-add" id="addBtn">添加句子</button>
+        </div>
+
+        <div class="card" id="dueCard" style="display:none;">
+            <h2>🔔 今日到期复习</h2>
+            <div class="due-header">
+                <span class="due-count" id="dueCount">0 个句子到期</span>
+            </div>
+            <div id="dueList"></div>
+        </div>
+
+        <div class="card">
+            <h2>📋 每周复习清单</h2>
+            <div class="week-nav">
+                <button id="prevWeek">← 上一周</button>
+                <span class="week-label" id="weekLabel"></span>
+                <button id="nextWeek">下一周 →</button>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-header">
+                    <span>本周进度</span>
+                    <span id="progressText">0 / 0 (0%)</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            <ul class="sentence-list" id="sentenceList"></ul>
+            <button class="btn-clear-week" id="clearWeekBtn">清空本周勾选</button>
+        </div>
+
+        <div class="card">
+            <h2>📦 数据管理</h2>
+            <div class="data-row">
+                <button class="btn-export" id="exportBtn">导出数据</button>
+                <button class="btn-import" id="importBtn">导入数据</button>
+            </div>
+            <input type="file" id="fileInput" class="hidden-input" accept=".json">
+            <button class="btn-install" id="installBtn">📱 安装到主屏幕</button>
+        </div>
+
+        <div class="card" id="offlineCard" style="display:none;">
+            <h2>🔌 离线模式</h2>
+            <p style="font-size:14px; color:#4a5568; line-height:1.6;">当前处于离线状态，所有功能可用。数据自动保存到本地。</p>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        if (!navigator.onLine) {
+            document.getElementById('offlineCard').style.display = 'block';
+        }
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineCard').style.display = 'block';
+        });
+        window.addEventListener('online', () => {
+            document.getElementById('offlineCard').style.display = 'none';
+        });
+
+        const STORAGE_KEY = 'sentenceReviewData_v1';
+
+        const SM2_DEFAULT_EASE = 2.5;
+        const SM2_MIN_EASE = 1.3;
+        const SM2_MAX_EASE = 3.0;
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function migrateSentence(sentence) {
+            if (sentence.repetitions === undefined) sentence.repetitions = 0;
+            if (sentence.easeFactor === undefined) sentence.easeFactor = SM2_DEFAULT_EASE;
+            if (sentence.interval === undefined) sentence.interval = 0;
+            if (sentence.dueDate === undefined) sentence.dueDate = new Date().toISOString();
+            if (sentence.lastReviewedAt === undefined) sentence.lastReviewedAt = null;
+            if (sentence.reviewHistory === undefined) sentence.reviewHistory = [];
+            if (sentence.checkedWeeks === undefined) sentence.checkedWeeks = [];
+            return sentence;
+        }
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return { sentences: [], currentWeekOffset: 0 };
+                const data = JSON.parse(raw);
+                if (data.sentences === undefined) data.sentences = [];
+                if (data.currentWeekOffset === undefined) data.currentWeekOffset = 0;
+                data.sentences = data.sentences.map(migrateSentence);
+                return data;
+            } catch (e) {
+                return { sentences: [], currentWeekOffset: 0 };
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function clampEase(value) {
+            return Math.max(SM2_MIN_EASE, Math.min(SM2_MAX_EASE, Math.round(value * 100) / 100));
+        }
+
+        function addDays(dateStr, days) {
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() + days);
+            return d.toISOString();
+        }
+
+        function calculateNextReview(sentence, grade) {
+            const now = new Date().toISOString();
+            const oldInterval = sentence.interval || 0;
+            const oldEase = sentence.easeFactor || SM2_DEFAULT_EASE;
+            const reps = sentence.repetitions || 0;
+
+            let newInterval, newEase, newReps;
+
+            if (grade === 0) {
+                newInterval = 1;
+                newEase = clampEase(oldEase - 0.2);
+                newReps = 0;
+            } else if (grade <= 2) {
+                newInterval = oldInterval < 1 ? 1 : oldInterval;
+                newEase = clampEase(oldEase - 0.15);
+                newReps = reps + 1;
+            } else if (grade === 3) {
+                newInterval = reps === 0 ? 1 : Math.round(oldInterval * oldEase);
+                newEase = oldEase;
+                newReps = reps + 1;
+            } else if (grade === 4) {
+                newInterval = reps === 0 ? 1 : Math.round(oldInterval * oldEase * 1.3);
+                newEase = clampEase(oldEase + 0.05);
+                newReps = reps + 1;
+            } else {
+                newInterval = reps === 0 ? 1 : Math.round(oldInterval * oldEase * 1.5);
+                newEase = clampEase(oldEase + 0.1);
+                newReps = reps + 1;
+            }
+
+            const newDueDate = addDays(now, newInterval);
+
+            return {
+                repetitions: newReps,
+                easeFactor: newEase,
+                interval: newInterval,
+                dueDate: newDueDate,
+                lastReviewedAt: now,
+                reviewHistory: [
+                    ...(sentence.reviewHistory || []),
+                    {
+                        date: now,
+                        grade: grade,
+                        oldInterval: oldInterval,
+                        newInterval: newInterval
+                    }
+                ]
+            };
+        }
+
+        function isDueToday(dueDateStr) {
+            const now = new Date();
+            const due = new Date(dueDateStr);
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+            return dueDay <= todayStart;
+        }
+
+        function getWeekKey(offset) {
+            const now = new Date();
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+            const days = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24));
+            const currentWeek = Math.floor((days + startOfYear.getDay()) / 7);
+            const targetWeek = currentWeek + offset;
+            return now.getFullYear() + '-W' + String(targetWeek).padStart(2, '0');
+        }
+
+        function getWeekRange(offset) {
+            const now = new Date();
+            const dayOfWeek = now.getDay() || 7;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - dayOfWeek + 1 + offset * 7);
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            const fmt = d => `${d.getMonth() + 1}月${d.getDate()}日`;
+            return `${fmt(monday)} - ${fmt(sunday)}`;
+        }
+
+        let state = loadData();
+
+        const sentenceInput = document.getElementById('sentenceInput');
+        const addBtn = document.getElementById('addBtn');
+        const sentenceList = document.getElementById('sentenceList');
+        const weekLabel = document.getElementById('weekLabel');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const prevWeekBtn = document.getElementById('prevWeek');
+        const nextWeekBtn = document.getElementById('nextWeek');
+        const clearWeekBtn = document.getElementById('clearWeekBtn');
+        const dueCard = document.getElementById('dueCard');
+        const dueList = document.getElementById('dueList');
+        const dueCount = document.getElementById('dueCount');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const fileInput = document.getElementById('fileInput');
+        const installBtn = document.getElementById('installBtn');
+
+        function render() {
+            renderDueSection();
+            renderWeekSection();
+        }
+
+        function renderDueSection() {
+            const dueSentences = state.sentences.filter(s => isDueToday(s.dueDate));
+            if (dueSentences.length === 0) {
+                dueCard.style.display = 'none';
+                return;
+            }
+
+            dueCard.style.display = 'block';
+            dueCount.textContent = `${dueSentences.length} 个句子到期`;
+            dueList.innerHTML = '';
+
+            dueSentences.forEach(sentence => {
+                const panel = document.createElement('div');
+                panel.className = 'review-panel';
+
+                const textEl = document.createElement('div');
+                textEl.className = 'rp-text';
+                textEl.textContent = sentence.text;
+
+                const gradeRow = document.createElement('div');
+                gradeRow.className = 'grade-buttons';
+
+                const gradeLabels = [
+                    { grade: 0, label: '重来', sub: '忘记了' },
+                    { grade: 1, label: '很差', sub: '<1分钟' },
+                    { grade: 2, label: '困难', sub: '<10分钟' },
+                    { grade: 3, label: '良好', sub: '回忆起来' },
+                    { grade: 4, label: '轻松', sub: '很快' },
+                    { grade: 5, label: '简单', sub: '太容易' }
+                ];
+
+                gradeLabels.forEach(gl => {
+                    const btn = document.createElement('button');
+                    btn.className = `grade-btn grade-${gl.grade}`;
+                    btn.innerHTML = `${gl.label}<span class="grade-label">${gl.sub}</span>`;
+                    btn.addEventListener('click', () => reviewSentence(sentence.id, gl.grade));
+                    gradeRow.appendChild(btn);
+                });
+
+                panel.appendChild(textEl);
+                panel.appendChild(gradeRow);
+                dueList.appendChild(panel);
+            });
+        }
+
+        function renderWeekSection() {
+            const weekKey = getWeekKey(state.currentWeekOffset);
+            weekLabel.textContent = getWeekRange(state.currentWeekOffset);
+
+            const checkedMap = state.sentences.reduce((acc, s) => {
+                acc[s.id] = s.checkedWeeks?.includes(weekKey) || false;
+                return acc;
+            }, {});
+
+            sentenceList.innerHTML = '';
+
+            if (state.sentences.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'empty';
+                li.textContent = '还没有句子，快去添加吧！';
+                sentenceList.appendChild(li);
+            } else {
+                state.sentences.forEach(sentence => {
+                    const li = document.createElement('li');
+                    li.className = 'sentence-item' + (checkedMap[sentence.id] ? ' checked' : '');
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = checkedMap[sentence.id];
+                    checkbox.addEventListener('change', () => toggleCheck(sentence.id, weekKey));
+
+                    const main = document.createElement('div');
+                    main.className = 'sentence-main';
+
+                    const span = document.createElement('span');
+                    span.className = 'sentence-text';
+                    span.textContent = sentence.text;
+
+                    const meta = document.createElement('div');
+                    meta.className = 'sentence-meta';
+
+                    const dueBadge = document.createElement('span');
+                    const days = Math.round((new Date(sentence.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+                    if (days < 0) {
+                        dueBadge.className = 'badge badge-due';
+                        dueBadge.textContent = `逾期${Math.abs(days)}天`;
+                    } else if (days === 0) {
+                        dueBadge.className = 'badge badge-due-today';
+                        dueBadge.textContent = '今天到期';
+                    } else {
+                        dueBadge.className = 'badge badge-interval';
+                        dueBadge.textContent = `${days}天后到期`;
+                    }
+
+                    const repsBadge = document.createElement('span');
+                    repsBadge.className = 'badge badge-reps';
+                    repsBadge.textContent = `复习${sentence.repetitions || 0}次`;
+
+                    const efBadge = document.createElement('span');
+                    efBadge.className = 'badge badge-mastered';
+                    efBadge.textContent = `EF ${(sentence.easeFactor || 2.5).toFixed(2)}`;
+
+                    meta.appendChild(dueBadge);
+                    meta.appendChild(repsBadge);
+                    meta.appendChild(efBadge);
+
+                    main.appendChild(span);
+                    main.appendChild(meta);
+
+                    const reviewBtn = document.createElement('button');
+                    reviewBtn.className = 'btn-review';
+                    reviewBtn.textContent = '复习';
+                    reviewBtn.addEventListener('click', () => {
+                        document.getElementById('dueCard').scrollIntoView({ behavior: 'smooth' });
+                    });
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'btn-del';
+                    delBtn.textContent = '删除';
+                    delBtn.addEventListener('click', () => deleteSentence(sentence.id));
+
+                    li.appendChild(checkbox);
+                    li.appendChild(main);
+                    li.appendChild(reviewBtn);
+                    li.appendChild(delBtn);
+                    sentenceList.appendChild(li);
+                });
+            }
+
+            updateProgress(weekKey);
+        }
+
+        function updateProgress(weekKey) {
+            const total = state.sentences.length;
+            const checked = state.sentences.filter(s =>
+                s.checkedWeeks?.includes(weekKey)
+            ).length;
+            const percent = total === 0 ? 0 : Math.round((checked / total) * 100);
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `${checked} / ${total} (${percent}%)`;
+        }
+
+        function toggleCheck(id, weekKey) {
+            const s = state.sentences.find(x => x.id === id);
+            if (!s) return;
+            if (!s.checkedWeeks) s.checkedWeeks = [];
+            const idx = s.checkedWeeks.indexOf(weekKey);
+            if (idx >= 0) s.checkedWeeks.splice(idx, 1);
+            else s.checkedWeeks.push(weekKey);
+            saveData();
+            render();
+        }
+
+        function reviewSentence(id, grade) {
+            const s = state.sentences.find(x => x.id === id);
+            if (!s) return;
+            const updates = calculateNextReview(s, grade);
+            Object.assign(s, updates);
+            saveData();
+            render();
+        }
+
+        function deleteSentence(id) {
+            if (!confirm('确定删除这个句子吗？')) return;
+            state.sentences = state.sentences.filter(s => s.id !== id);
+            saveData();
+            render();
+        }
+
+        function addSentence() {
+            const text = sentenceInput.value.trim();
+            if (!text) {
+                sentenceInput.focus();
+                return;
+            }
+            state.sentences.push(migrateSentence({
+                id: Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+                text: text,
+                createdAt: new Date().toISOString(),
+                checkedWeeks: [],
+                repetitions: 0,
+                easeFactor: SM2_DEFAULT_EASE,
+                interval: 0,
+                dueDate: new Date().toISOString(),
+                lastReviewedAt: null,
+                reviewHistory: []
+            }));
+            sentenceInput.value = '';
+            saveData();
+            render();
+        }
+
+        function exportData() {
+            const exportObj = {
+                version: '1',
+                exportedAt: new Date().toISOString(),
+                data: state
+            };
+            const jsonStr = JSON.stringify(exportObj, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            a.download = `sentence-review-backup-${ts}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('数据已导出！');
+        }
+
+        function importData(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!imported.data || !imported.data.sentences) {
+                        showToast('文件格式错误！');
+                        return;
+                    }
+                    const choice = confirm(
+                        `检测到 ${imported.data.sentences.length} 个句子。\n\n` +
+                        `点"确定"：合并导入（保留现有，添加新的）\n` +
+                        `点"取消"：覆盖导入（替换所有现有数据）`
+                    );
+
+                    if (choice) {
+                        const existingIds = new Set(state.sentences.map(s => s.id));
+                        const newSentences = imported.data.sentences
+                            .filter(s => !existingIds.has(s.id))
+                            .map(migrateSentence);
+                        state.sentences = state.sentences.concat(newSentences);
+                        saveData();
+                        render();
+                        showToast(`合并成功！新增 ${newSentences.length} 个句子`);
+                    } else {
+                        if (confirm('确定要覆盖所有数据吗？此操作不可撤销！')) {
+                            state = {
+                                sentences: imported.data.sentences.map(migrateSentence),
+                                currentWeekOffset: imported.data.currentWeekOffset || 0
+                            };
+                            saveData();
+                            render();
+                            showToast('数据已覆盖导入！');
+                        }
+                    }
+                } catch (err) {
+                    showToast('文件解析失败：' + err.message);
+                }
+            };
+            reader.onerror = function() {
+                showToast('读取文件失败！');
+            };
+            reader.readAsText(file);
+        }
+
+        function registerServiceWorker() {
+            if (!('serviceWorker' in navigator)) return;
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => {
+                    console.log('Service Worker 注册成功');
+                })
+                .catch(err => {
+                    console.log('Service Worker 注册失败:', err);
+                });
+        }
+
+        function setupInstallPrompt() {
+            let deferredPrompt = null;
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installBtn.style.display = 'block';
+
+                installBtn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    }
+                });
+            });
+
+            window.addEventListener('appinstalled', () => {
+                installBtn.style.display = 'none';
+                showToast('应用已安装到主屏幕！');
+            });
+        }
+
+        addBtn.addEventListener('click', addSentence);
+        sentenceInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addSentence();
+            }
+        });
+
+        prevWeekBtn.addEventListener('click', () => {
+            state.currentWeekOffset--;
+            saveData();
+            render();
+        });
+
+        nextWeekBtn.addEventListener('click', () => {
+            state.currentWeekOffset++;
+            saveData();
+            render();
+        });
+
+        clearWeekBtn.addEventListener('click', () => {
+            if (!confirm('确定清空本周所有勾选？')) return;
+            const weekKey = getWeekKey(state.currentWeekOffset);
+            state.sentences.forEach(s => {
+                if (s.checkedWeeks) {
+                    s.checkedWeeks = s.checkedWeeks.filter(w => w !== weekKey);
+                }
+            });
+            saveData();
+            render();
+        });
+
+        exportBtn.addEventListener('click', exportData);
+
+        importBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) importData(file);
+        });
+
+        registerServiceWorker();
+        setupInstallPrompt();
+        render();
+    </script>
+</body>
+</html>
