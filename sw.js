@@ -1,7 +1,7 @@
 const CACHE_NAME = 'jzfx-pwa-v2';
 const SHELL_CACHE = [
     './',
-    './INDEX.HTML'
+    './index.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -39,7 +39,7 @@ self.addEventListener('fetch', (event) => {
                 }
                 return response;
             }).catch(() => {
-                return caches.match('./INDEX.HTML');
+                return caches.match('./index.html');
             });
         })
     );
